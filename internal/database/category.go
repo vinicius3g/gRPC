@@ -10,7 +10,7 @@ type Category struct {
 	db          *sql.DB
 	ID          string
 	Name        string
-	Description *string
+	Description string
 }
 
 func NewCategory(db *sql.DB) *Category {
@@ -24,7 +24,7 @@ func (c *Category) Create(name string, description string) (Category, error) {
 	if err != nil {
 		return Category{}, err
 	}
-	return Category{ID: id, Name: name, Description: &description}, nil
+	return Category{ID: id, Name: name, Description: description}, nil
 }
 
 func (c *Category) FindAll() ([]Category, error) {
@@ -35,19 +35,11 @@ func (c *Category) FindAll() ([]Category, error) {
 	defer rows.Close()
 	categories := []Category{}
 	for rows.Next() {
-		var id, name string
-		var description sql.NullString
+		var id, name, description string
 		if err := rows.Scan(&id, &name, &description); err != nil {
 			return nil, err
 		}
-		var descriptionPtr *string
-
-		if description.Valid {
-			descriptionPtr = &description.String
-		} else {
-			descriptionPtr = nil
-		}
-		categories = append(categories, Category{ID: id, Name: name, Description: descriptionPtr})
+		categories = append(categories, Category{ID: id, Name: name, Description: description})
 	}
 	return categories, nil
 }
@@ -59,5 +51,15 @@ func (c *Category) FindByCourseID(courseID string) (Category, error) {
 	if err != nil {
 		return Category{}, err
 	}
-	return Category{ID: id, Name: name, Description: &description}, nil
+	return Category{ID: id, Name: name, Description: description}, nil
+}
+
+func (c *Category) Find(id string) (Category, error) {
+	var name, description string
+	err := c.db.QueryRow("SELECT name, description FROM categories WHERE id = $1", id).
+		Scan(&name, &description)
+	if err != nil {
+		return Category{}, err
+	}
+	return Category{ID: id, Name: name, Description: description}, nil
 }

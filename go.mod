@@ -1,4 +1,4 @@
-module github.com/vinicius3g/gRPC.git
+module github.com/vinicius3g/gRPC
 
 go 1.22.4
 
